@@ -97,6 +97,7 @@ app.get("/auth/discord/callback", async (req, res) => {
       `${process.env.FRONTEND_URL!}/auth/callback?token=${jwtToken}`
     );
   } catch (err) {
+    console.log(err);
     res.status(500).send("OAuth failed");
   }
 });
