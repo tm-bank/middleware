@@ -7,6 +7,7 @@ import { pgPool } from "./db";
 
 import maps from "./routes/maps";
 import auth from "./routes/auth";
+import me from "./routes/me";
 
 dotenv.config();
 
@@ -41,6 +42,7 @@ app.get("/", (_req: Request, res: Response) => {
 
 app.use("/maps", maps);
 app.use("/auth", auth);
+app.use("/me", me)
 
 const server = app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
