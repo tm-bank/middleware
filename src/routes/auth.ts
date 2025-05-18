@@ -6,7 +6,7 @@ const router = Router();
 router.get("/discord", passport.authenticate("discord"));
 
 router.get(
-  "/discord/callback",
+  "/callback",
   passport.authenticate("discord", {
     failureRedirect: "/",
     successRedirect: process.env.FRONTEND_URL || "/",
