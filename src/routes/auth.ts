@@ -13,14 +13,16 @@ router.get(
   })
 );
 
-const requireAuthKey: express.RequestHandler = (req: Request, res: Response, next) => {
+export const requireAuthKey: express.RequestHandler = (
+  req: Request,
+  res: Response,
+  next
+) => {
   const key = req.header("x-auth-key");
   if (key && key === process.env.AUTH_KEY) {
     return next();
   }
   res.status(401).json({ error: "Invalid or missing AUTH_KEY" });
 };
-
-router.use(requireAuthKey);
 
 export default router;
