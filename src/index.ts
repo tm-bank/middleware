@@ -1,67 +1,93 @@
 import express, { Request, Response } from "express";
-import session from "express-session";
-import passport from "./passport";
 import dotenv from "dotenv";
-import connectPgSimple from "connect-pg-simple";
-import { pgPool } from "./db";
-
-import maps from "./routes/maps";
-import auth from "./routes/auth";
-import me from "./routes/me";
+import axios from "axios";
+import cookieParser from "cookie-parser";
+import cors from "cors"
 
 dotenv.config();
 
-const PgSession = connectPgSimple(session);
-
 const app = express();
-const port = process.env.PORT || 3001;
+const port = process.env.PORT || 3000;
 
-app.use((req, res, next) => {
-  const allowedOrigins = [
-    "http://localhost:5173",
-    "http://tmbank.onrender.com",
-    "https://tmbank.onrender.com",
-  ];
-  const origin = req.headers.origin;
-  if (typeof origin === "string" && allowedOrigins.includes(origin)) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
-  }
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept, Authorization, x-auth-key"
-  );
-  res.header("Access-Control-Allow-Credentials", "true");
-  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, UPDATE");
-  next();
-});
+app.use(cookieParser());
+app.use(express.json());
+
+const CLIENT_ID = process.env.DISCORD_CLIENT_ID!;
+const CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET!;
+const REDIRECT_URI = process.env.DISCORD_REDIRECT_URI!;
 
 app.use(
-  session({
-    store: new PgSession({
-      pool: pgPool,
-      tableName: "session",
-    }),
-    secret: process.env.AUTH_KEY || "changeme",
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      secure: true,
-      sameSite: "none",
-      maxAge: 24 * 60 * 60 * 1000,
-    },
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
   })
 );
 
-app.use(passport.initialize());
-app.use(passport.session());
-
-app.get("/", (_req: Request, res: Response) => {
-  res.status(200).send("tm-bank api");
+app.get("/auth/discord/login", (req, res) => {
+  const params = new URLSearchParams({
+    client_id: CLIENT_ID,
+    redirect_uri: REDIRECT_URI,
+    response_type: "code",
+    scope: "identify email",
+    prompt: "consent",
+  });
+  res.redirect(`https://discord.com/api/oauth2/authorize?${params}`);
 });
 
-app.use("/maps", maps);
-app.use("/auth", auth);
-app.use("/me", me);
+app.get("/auth/discord/callback", async (req, res) => {
+  const code = req.query.code as string;
+  if (!code) {
+    res.status(400).send("No code provided");
+    return;
+  }
+
+  try {
+    const tokenRes = await axios.post(
+      "https://discord.com/api/oauth2/token",
+      new URLSearchParams({
+        client_id: CLIENT_ID,
+        client_secret: CLIENT_SECRET,
+        grant_type: "authorization_code",
+        code,
+        redirect_uri: REDIRECT_URI,
+        scope: "identify email",
+      }),
+      { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
+    );
+
+    const accessToken = tokenRes.data.access_token;
+
+    const userRes = await axios.get("https://discord.com/api/users/@me", {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    const user = userRes.data;
+
+    // Set user info in a cookie (for demo; use JWT or session in production)
+    res.cookie("user", JSON.stringify(user), {
+      httpOnly: false, // Set to true in production
+      sameSite: "lax",
+    });
+
+    res.redirect("http://localhost:5173/");
+  } catch (err) {
+    res.status(500).send("OAuth failed");
+  }
+});
+
+app.post("/auth/logout", (req, res) => {
+  res.clearCookie("user", { sameSite: "lax" });
+  res.status(200).json({ message: "Logged out" });
+});
+
+app.get("/auth/me", (req, res) => {
+  const user = req.cookies.user;
+  if (!user) {
+    res.status(401).json({ error: "Not authenticated" });
+    return;
+  }
+  res.json(JSON.parse(user));
+});
 
 const server = app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
