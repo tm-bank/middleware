@@ -84,7 +84,11 @@ app.get("/auth/discord/callback", async (req, res) => {
 });
 
 app.post("/auth/logout", (req, res) => {
-  res.clearCookie("user", { sameSite: "lax" });
+  res.clearCookie("user", {
+    httpOnly: true,
+    sameSite: "none",
+    secure: true,
+  });
   res.status(200).json({ message: "Logged out" });
 });
 
