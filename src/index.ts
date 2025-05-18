@@ -88,14 +88,6 @@ app.post("/auth/logout", (req, res) => {
   res.status(200).json({ message: "Logged out" });
 });
 
-app.get("/auth/me", (req, res) => {
-  const user = req.cookies.user;
-  if (!user) {
-    res.status(401).json({ error: "Not authenticated" });
-    return;
-  }
-  res.json(JSON.parse(user));
-});
 
 app.post("/auth/set-cookie", (req, res) => {
   const { token } = req.body;
@@ -123,7 +115,6 @@ app.get("/auth/me", (req, res) => {
     res.status(401).json({ error: "Not authenticated" });
     return;
   }
-
   try {
     const user = jwt.verify(token, process.env.SESSION_SECRET!);
     res.json(user);
