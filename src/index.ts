@@ -16,6 +16,26 @@ const PgSession = connectPgSimple(session);
 const app = express();
 const port = process.env.PORT || 3001;
 
+app.use((req, res, next) => {
+  // res.header("Access-Control-Allow-Origin", "*");
+  const allowedOrigins = [
+    "http://localhost:5173",
+    "http://tmbank.onrender.com",
+    "https://tmbank.onrender.com",
+  ];
+  const origin = req.headers.origin;
+  if (typeof origin === "string" && allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+  );
+  res.header("Access-Control-Allow-credentials", "true");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, UPDATE");
+  next();
+});
+
 app.use(
   session({
     store: new PgSession({
@@ -42,7 +62,7 @@ app.get("/", (_req: Request, res: Response) => {
 
 app.use("/maps", maps);
 app.use("/auth", auth);
-app.use("/me", me)
+app.use("/me", me);
 
 const server = app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
