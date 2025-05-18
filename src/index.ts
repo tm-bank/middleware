@@ -2,7 +2,8 @@ import express, { Request, Response } from "express";
 import dotenv from "dotenv";
 import axios from "axios";
 import cookieParser from "cookie-parser";
-import cors from "cors"
+import cors from "cors";
+import jwt from "jsonwebtoken";
 
 dotenv.config();
 
@@ -63,14 +64,20 @@ app.get("/auth/discord/callback", async (req, res) => {
 
     const user = userRes.data;
 
-    // Set user info in a cookie (for demo; use JWT or session in production)
-    res.cookie("user", JSON.stringify(user), {
-      httpOnly: false, // Set to true in production
-      sameSite: "none",
-      secure: true
-    });
+    const jwtToken = jwt.sign(
+      {
+        id: user.id,
+        username: user.username,
+        avatar: user.avatar,
+        global_name: user.global_name,
+      },
+      process.env.SESSION_SECRET!,
+      { expiresIn: "7d" }
+    );
 
-    res.redirect(process.env.FRONTEND_URL!); // ENV provided by Render
+    res.redirect(
+      `${process.env.FRONTEND_URL!}/auth/callback?token=${jwtToken}`
+    );
   } catch (err) {
     res.status(500).send("OAuth failed");
   }
@@ -88,6 +95,41 @@ app.get("/auth/me", (req, res) => {
     return;
   }
   res.json(JSON.parse(user));
+});
+
+app.post("/auth/set-cookie", (req, res) => {
+  const { token } = req.body;
+  if (!token) {
+    res.status(400).send("No token provided");
+    return;
+  }
+
+  try {
+    jwt.verify(token, process.env.SESSION_SECRET!);
+    res.cookie("user", token, {
+      httpOnly: true,
+      sameSite: "none",
+      secure: true,
+    });
+    res.status(200).json({ message: "Cookie set" });
+  } catch {
+    res.status(401).send("Invalid token");
+  }
+});
+
+app.get("/auth/me", (req, res) => {
+  const token = req.cookies.user;
+  if (!token) {
+    res.status(401).json({ error: "Not authenticated" });
+    return;
+  }
+
+  try {
+    const user = jwt.verify(token, process.env.SESSION_SECRET!);
+    res.json(user);
+  } catch {
+    res.status(401).json({ error: "Invalid token" });
+  }
 });
 
 const server = app.listen(port, () => {
