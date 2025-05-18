@@ -66,7 +66,8 @@ app.get("/auth/discord/callback", async (req, res) => {
     // Set user info in a cookie (for demo; use JWT or session in production)
     res.cookie("user", JSON.stringify(user), {
       httpOnly: false, // Set to true in production
-      sameSite: "lax",
+      sameSite: "none",
+      secure: true
     });
 
     res.redirect(process.env.FRONTEND_URL!); // ENV provided by Render
