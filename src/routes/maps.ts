@@ -17,6 +17,39 @@ router.get("/", async (_req: Request, res: Response) => {
   }
 });
 
+router.get("/search", async (req: Request, res: Response) => {
+  const { q, author } = req.query;
+
+  let conditions: string[] = [];
+  let values: any[] = [];
+
+  if (q) {
+    values.push(`%${q}%`);
+    conditions.push(`map::text ILIKE $${values.length}`);
+  }
+  
+  if (author) {
+    values.push(author);
+    conditions.push(`author = $${values.length}`);
+  }
+
+  const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+
+  try {
+    const { rows } = await pgPool.query(
+      `SELECT id, map, created_at, author, author_display
+       FROM maps
+       ${whereClause}
+       ORDER BY created_at DESC`,
+      values
+    );
+    res.json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to search maps" });
+  }
+});
+
 router.get("/:id", async (req: Request, res: Response) => {
   const { id } = req.params;
   try {
