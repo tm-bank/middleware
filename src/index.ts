@@ -1,9 +1,11 @@
-import express, { Request, Response } from "express";
+import express from "express";
 import dotenv from "dotenv";
 import axios from "axios";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import jwt from "jsonwebtoken";
+import { PrismaClient } from "@prisma/client";
+const prisma = new PrismaClient();
 
 dotenv.config();
 
@@ -63,6 +65,22 @@ app.get("/auth/discord/callback", async (req, res) => {
     });
 
     const user = userRes.data;
+    console.log(user);
+
+    await prisma.users.upsert({
+      where: { id: user.id },
+      update: {
+        username: user.username,
+        displayName: user.global_name || user.username,
+        avatar: user.avatar,
+      },
+      create: {
+        id: user.id,
+        username: user.username,
+        displayName: user.global_name || user.username,
+        avatar: user.avatar,
+      },
+    });
 
     const jwtToken = jwt.sign(
       {
@@ -91,7 +109,6 @@ app.post("/auth/logout", (req, res) => {
   });
   res.status(200).json({ message: "Logged out" });
 });
-
 
 app.post("/auth/set-cookie", (req, res) => {
   const { token } = req.body;
