@@ -30,7 +30,7 @@ app.use((req, res, next) => {
     "Access-Control-Allow-Headers",
     "Origin, X-Requested-With, Content-Type, Accept, Authorization, x-auth-key"
   );
-  res.header("Access-Control-Allow-Credentials", "true"); // <-- Capital "C"
+  res.header("Access-Control-Allow-Credentials", "true");
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, UPDATE");
   next();
 });
@@ -45,8 +45,8 @@ app.use(
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      secure: false,
+      sameSite: "none",
       maxAge: 24 * 60 * 60 * 1000,
     },
   })
