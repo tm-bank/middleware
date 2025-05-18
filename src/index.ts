@@ -18,7 +18,7 @@ const REDIRECT_URI = process.env.DISCORD_REDIRECT_URI!;
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: process.env.FRONTEND_URL!,
     credentials: true,
   })
 );
@@ -69,7 +69,7 @@ app.get("/auth/discord/callback", async (req, res) => {
       sameSite: "lax",
     });
 
-    res.redirect("http://localhost:5173/");
+    res.redirect(process.env.FRONTEND_URL!); // ENV provided by Render
   } catch (err) {
     res.status(500).send("OAuth failed");
   }
