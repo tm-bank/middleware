@@ -17,7 +17,6 @@ const app = express();
 const port = process.env.PORT || 3001;
 
 app.use((req, res, next) => {
-  // res.header("Access-Control-Allow-Origin", "*");
   const allowedOrigins = [
     "http://localhost:5173",
     "http://tmbank.onrender.com",
@@ -29,9 +28,9 @@ app.use((req, res, next) => {
   }
   res.header(
     "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization, x-auth-key"
   );
-  res.header("Access-Control-Allow-credentials", "true");
+  res.header("Access-Control-Allow-Credentials", "true"); // <-- Capital "C"
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, UPDATE");
   next();
 });
