@@ -4,7 +4,7 @@ import axios from "axios";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import jwt from "jsonwebtoken";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "./generated/prisma/client";
 const prisma = new PrismaClient();
 
 dotenv.config();
