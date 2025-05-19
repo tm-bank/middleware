@@ -77,7 +77,7 @@ router.get("/discord/callback", async (req, res) => {
     );
 
     res.redirect(
-      `${process.env.FRONTEND_URL!}/callback?token=${jwtToken}`
+      `${process.env.FRONTEND_URL!}/auth/callback?token=${jwtToken}`
     );
   } catch (err) {
     console.log(err);
