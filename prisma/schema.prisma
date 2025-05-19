@@ -25,6 +25,6 @@ model users {
   username    String
   displayName String
   avatar      String
-  votes       String[] // map ids
+  votes       String[] @default([]) // map ids
   maps        maps[]
 }
