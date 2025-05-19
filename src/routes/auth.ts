@@ -9,7 +9,7 @@ const CLIENT_ID = process.env.DISCORD_CLIENT_ID!;
 const CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET!;
 const REDIRECT_URI = process.env.DISCORD_REDIRECT_URI!;
 
-router.get("/auth/discord/login", (req, res) => {
+router.get("/discord/login", (req, res) => {
   const params = new URLSearchParams({
     client_id: CLIENT_ID,
     redirect_uri: REDIRECT_URI,
@@ -20,7 +20,7 @@ router.get("/auth/discord/login", (req, res) => {
   res.redirect(`https://discord.com/api/oauth2/authorize?${params}`);
 });
 
-router.get("/auth/discord/callback", async (req, res) => {
+router.get("/discord/callback", async (req, res) => {
   const code = req.query.code as string;
   if (!code) {
     res.status(400).send("No code provided");
@@ -77,7 +77,7 @@ router.get("/auth/discord/callback", async (req, res) => {
     );
 
     res.redirect(
-      `${process.env.FRONTEND_URL!}/auth/callback?token=${jwtToken}`
+      `${process.env.FRONTEND_URL!}/callback?token=${jwtToken}`
     );
   } catch (err) {
     console.log(err);
@@ -85,7 +85,7 @@ router.get("/auth/discord/callback", async (req, res) => {
   }
 });
 
-router.post("/auth/logout", (req, res) => {
+router.post("/logout", (req, res) => {
   res.clearCookie("user", {
     httpOnly: true,
     sameSite: "none",
@@ -94,7 +94,7 @@ router.post("/auth/logout", (req, res) => {
   res.status(200).json({ message: "Logged out" });
 });
 
-router.post("/auth/set-cookie", (req, res) => {
+router.post("/set-cookie", (req, res) => {
   const { token } = req.body;
   if (!token) {
     res.status(400).send("No token provided");
@@ -114,7 +114,7 @@ router.post("/auth/set-cookie", (req, res) => {
   }
 });
 
-router.get("/auth/me", (req, res) => {
+router.get("/me", (req, res) => {
   const token = req.cookies.user;
   if (!token) {
     res.status(401).json({ error: "Not authenticated" });
