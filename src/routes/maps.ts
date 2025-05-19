@@ -93,18 +93,28 @@ router.post("/", requireAuth, async (req, res) => {
       },
     });
 
-    await prisma.users.update({
-      where: {
-        id: user.id,
-      },
-      data: {
-        maps: {
-          connect: { id: map.id },
-        },
-      },
+    res.status(201).json(convertBigInt(map));
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Failed to create map" });
+  }
+});
+
+router.delete("/", requireAuth, async (req, res) => {
+  try {
+    const user = (req as any).user;
+    const { mapId } = req.body;
+
+    if (!mapId) {
+      res.status(400).json({ error: "Missing required fields" });
+      return;
+    }
+
+    await prisma.maps.delete({
+      where: { id: mapId },
     });
 
-    res.status(201).json(convertBigInt(map));
+    res.status(201);
   } catch (err) {
     console.log(err);
     res.status(500).json({ error: "Failed to create map" });
