@@ -4,6 +4,45 @@ import { convertBigInt, requireAuth } from "../middleware";
 
 const router = Router();
 
+router.get("/search", async (req, res) => {
+  try {
+    const { title, author, tags } = req.query;
+
+    const where: any = {};
+
+    if (title) {
+      where.title = { contains: String(title), mode: "insensitive" };
+    }
+
+    if (author) {
+      where.author = {
+        username: { contains: String(author), mode: "insensitive" },
+      };
+    }
+
+    if (tags) {
+      const tagArr = String(tags)
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean);
+      if (tagArr.length > 0) {
+        where.tags = { hasSome: tagArr };
+      }
+    }
+
+    const maps = await prisma.maps.findMany({
+      where,
+      include: { author: true },
+      orderBy: { createdAt: "desc" },
+    });
+
+    res.json(convertBigInt(maps));
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Failed to search maps" });
+  }
+});
+
 router.get("/:mapId", async (req, res) => {
   try {
     const id = req.params.mapId;
@@ -58,45 +97,6 @@ router.post("/", requireAuth, async (req, res) => {
   } catch (err) {
     console.log(err);
     res.status(500).json({ error: "Failed to create map" });
-  }
-});
-
-router.get("/search", async (req, res) => {
-  try {
-    const { title, author, tags } = req.query;
-
-    const where: any = {};
-
-    if (title) {
-      where.title = { contains: String(title), mode: "insensitive" };
-    }
-
-    if (author) {
-      where.author = {
-        username: { contains: String(author), mode: "insensitive" },
-      };
-    }
-
-    if (tags) {
-      const tagArr = String(tags)
-        .split(",")
-        .map((t) => t.trim())
-        .filter(Boolean);
-      if (tagArr.length > 0) {
-        where.tags = { hasSome: tagArr };
-      }
-    }
-
-    const maps = await prisma.maps.findMany({
-      where,
-      include: { author: true },
-      orderBy: { createdAt: "desc" },
-    });
-
-    res.json(convertBigInt(maps));
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({ error: "Failed to search maps" });
   }
 });
 
