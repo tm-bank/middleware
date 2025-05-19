@@ -1,17 +1,29 @@
 import { Router } from "express";
-import jwt from "jsonwebtoken";
 import { prisma } from "../prisma";
 import { convertBigInt, requireAuth } from "../middleware";
 
 const router = Router();
 
-router.get("/", async (req, res) => {
+router.get("/:mapId", async (req, res) => {
   try {
-    const maps = await prisma.maps.findMany({
-      include: { author: true },
-      orderBy: { createdAt: "desc" },
-    });
-    res.json(maps);
+    const id = req.params.mapId;
+
+    if (id) {
+      const map = await prisma.maps.findFirst({
+        where: {
+          id: { equals: String(id) },
+        },
+      });
+
+      res.json([map]);
+    } else {
+      const maps = await prisma.maps.findMany({
+        include: { author: true },
+        orderBy: { createdAt: "desc" },
+      });
+
+      res.json(maps);
+    }
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch maps" });
   }
