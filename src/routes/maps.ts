@@ -78,6 +78,7 @@ router.get("/search", async (req, res) => {
 
     res.json(maps);
   } catch (err) {
+    console.log(err)
     res.status(500).json({ error: "Failed to search maps" });
   }
 });
