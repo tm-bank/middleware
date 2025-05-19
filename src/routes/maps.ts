@@ -48,7 +48,6 @@ router.get("/search", async (req, res) => {
   try {
     const { title, author, tags } = req.query;
 
-    // Build Prisma where clause
     const where: any = {};
 
     if (title) {
