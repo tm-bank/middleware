@@ -16,10 +16,11 @@ router.get("/:mapId", async (req, res) => {
       });
 
       if (!map) {
-        return res.status(404).json({ error: "Map not found" });
+        res.status(404).json({ error: "Map not found" });
+        return;
       }
 
-      res.json(map); // Return the map object directly
+      res.json(map);
     } else {
       const maps = await prisma.maps.findMany({
         include: { author: true },
