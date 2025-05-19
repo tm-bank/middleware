@@ -59,14 +59,14 @@ router.get("/:mapId", async (req, res) => {
         return;
       }
 
-      res.json(map);
+      res.json(convertBigInt(map));
     } else {
       const maps = await prisma.maps.findMany({
         include: { author: true },
         orderBy: { createdAt: "desc" },
       });
 
-      res.json(maps);
+      res.json(convertBigInt(maps));
     }
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch maps" });
@@ -93,7 +93,7 @@ router.post("/", requireAuth, async (req, res) => {
       },
     });
 
-    res.status(201).json(map);
+    res.status(201).json(convertBigInt(map));
   } catch (err) {
     console.log(err);
     res.status(500).json({ error: "Failed to create map" });
