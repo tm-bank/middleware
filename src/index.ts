@@ -10,17 +10,18 @@ const port = process.env.PORT || 3000;
 
 app.use(cookieParser());
 app.use(express.json());
-
-import auth from "./routes/auth";
-
-app.use("/auth", auth);
-
 app.use(
   cors({
     origin: process.env.FRONTEND_URL!,
     credentials: true,
   })
 );
+
+import auth from "./routes/auth";
+import maps from "./routes/maps";
+
+app.use("/auth", auth);
+app.use("/maps", maps);
 
 const server = app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
