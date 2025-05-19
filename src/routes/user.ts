@@ -8,8 +8,7 @@ router.get("/", async (req, res) => {
     const { queryId } = req.query;
 
     const where: any = {};
-
-    where.id = { contains: String(queryId), mode: "sensitive" };
+    where.id = { contains: String(queryId) };
 
     const user = await prisma.users.findFirst({
       where,
