@@ -78,7 +78,7 @@ router.get("/search", async (req, res) => {
 
     res.json(convertBigInt(maps));
   } catch (err) {
-    console.log(err)
+    console.log(err);
     res.status(500).json({ error: "Failed to search maps" });
   }
 });

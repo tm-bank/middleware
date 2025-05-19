@@ -17,7 +17,8 @@ router.get("/", async (req, res) => {
 
     res.json(user);
   } catch (err) {
-    res.status(500).json({ error: "Failed to fetch maps" });
+    console.log(err);
+    res.status(500).json({ error: "Failed to fetch users" });
   }
 });
 
