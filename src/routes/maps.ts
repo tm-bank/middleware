@@ -1,7 +1,7 @@
 import { Router } from "express";
 import jwt from "jsonwebtoken";
 import { prisma } from "../prisma";
-import { requireAuth } from "../middleware";
+import { convertBigInt, requireAuth } from "../middleware";
 
 const router = Router();
 
@@ -76,7 +76,7 @@ router.get("/search", async (req, res) => {
       orderBy: { createdAt: "desc" },
     });
 
-    res.json(maps);
+    res.json(convertBigInt(maps));
   } catch (err) {
     console.log(err)
     res.status(500).json({ error: "Failed to search maps" });

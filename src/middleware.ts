@@ -17,3 +17,20 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
     return;
   }
 }
+
+export function convertBigInt(obj: any): any {
+  if (Array.isArray(obj)) {
+    return obj.map(convertBigInt);
+  } else if (obj && typeof obj === "object") {
+    const newObj: any = {};
+    for (const key in obj) {
+      if (typeof obj[key] === "bigint") {
+        newObj[key] = obj[key].toString();
+      } else {
+        newObj[key] = convertBigInt(obj[key]);
+      }
+    }
+    return newObj;
+  }
+  return obj;
+}
