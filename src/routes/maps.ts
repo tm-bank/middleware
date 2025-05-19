@@ -121,4 +121,52 @@ router.delete("/", requireAuth, async (req, res) => {
   }
 });
 
+router.post("/vote", requireAuth, async (req, res) => {
+  try {
+    const user = (req as any).user;
+    const { mapId, up } = req.body;
+
+    if (!mapId || typeof up !== "boolean") {
+      res.status(400).json({ error: "Missing required fields" });
+      return;
+    }
+
+    // Check if user has already voted for this map
+    const dbUser = await prisma.users.findUnique({ where: { id: user.id } });
+    
+    if (!dbUser) {
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
+
+    if (dbUser.votes.includes(mapId)) {
+      res.status(400).json({ error: "Already voted for this map" });
+      return;
+    }
+
+    const map = await prisma.maps.update({
+      where: { id: mapId },
+      data: {
+        votes: {
+          increment: up ? 1 : -1,
+        },
+      },
+    });
+
+    await prisma.users.update({
+      where: { id: user.id },
+      data: {
+        votes: {
+          push: mapId,
+        },
+      },
+    });
+
+    res.status(200).json(convertBigInt(map));
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Failed to cast vote" });
+  }
+});
+
 export default router;

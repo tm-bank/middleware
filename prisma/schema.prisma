@@ -11,7 +11,7 @@ datasource db {
 model maps {
   id        String   @id @default(uuid())
   title     String
-  views     BigInt   @default(0)
+  votes     BigInt   @default(0)
   viewLink  String
   images    String[]
   tags      String[]
@@ -21,9 +21,10 @@ model maps {
 }
 
 model users {
-  id          String @id
+  id          String   @id
   username    String
   displayName String
   avatar      String
+  votes       String[] // map ids
   maps        maps[]
 }
