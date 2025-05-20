@@ -26,7 +26,7 @@ router.get("/search", async (req, res) => {
         .map((t) => t.trim())
         .filter(Boolean);
       if (tagArr.length > 0) {
-        where.tags = { hasSome: tagArr };
+        where.tags = { hasEvery: tagArr };
       }
     }
 
