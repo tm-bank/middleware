@@ -33,7 +33,7 @@ router.get("/search", async (req, res) => {
     const maps = await prisma.maps.findMany({
       where,
       include: { author: true },
-      orderBy: { createdAt: "desc" },
+      orderBy: { votes: "desc" },
     });
 
     res.json(convertBigInt(maps));
@@ -133,7 +133,7 @@ router.post("/vote", requireAuth, async (req, res) => {
 
     // Check if user has already voted for this map
     const dbUser = await prisma.users.findUnique({ where: { id: user.id } });
-    
+
     if (!dbUser) {
       res.status(404).json({ error: "User not found" });
       return;
