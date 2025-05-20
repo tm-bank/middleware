@@ -62,15 +62,24 @@ router.get("/discord/callback", async (req, res) => {
         username: user.username,
         displayName: user.global_name || user.username,
         avatar: user.avatar,
+        admin: false,
       },
     });
 
+    const dbUser = await prisma.users.findUnique({ where: { id: user.id } });
+
+    if (!dbUser) {
+      res.status(500).send("User not found in database after upsert");
+      return;
+    }
+
     const jwtToken = jwt.sign(
       {
-        id: user.id,
-        username: user.username,
-        avatar: user.avatar,
-        global_name: user.global_name,
+        id: dbUser.id,
+        username: dbUser.username,
+        avatar: dbUser.avatar,
+        global_name: dbUser.displayName,
+        admin: dbUser.admin,
       },
       process.env.SESSION_SECRET!,
       { expiresIn: "7d" }
@@ -127,6 +136,5 @@ router.get("/me", (req, res) => {
     res.status(401).json({ error: "Invalid token" });
   }
 });
-
 
 export default router;
