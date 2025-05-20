@@ -27,4 +27,5 @@ model users {
   avatar      String
   votes       String[] @default([]) // map ids
   maps        maps[]
+  admin       Boolean  @default(false)
 }
