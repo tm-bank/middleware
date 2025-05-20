@@ -100,6 +100,40 @@ router.post("/", requireAuth, async (req, res) => {
   }
 });
 
+router.put("/:mapId", requireAuth, async (req, res) => {
+  try {
+    const user = (req as any).user;
+    const { mapId } = req.params;
+    const { title, viewLink, images, tags } = req.body;
+
+    const map = await prisma.maps.findUnique({ where: { id: mapId } });
+    
+    if (!map) {
+      res.status(404).json({ error: "Map not found" });
+      return;
+    }
+    if (map.authorId !== user.id && !user.admin) {
+      res.status(403).json({ error: "Not authorized" });
+      return;
+    }
+
+    const updated = await prisma.maps.update({
+      where: { id: mapId },
+      data: {
+        title,
+        viewLink,
+        images,
+        tags,
+      },
+    });
+
+    res.json(convertBigInt(updated));
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Failed to update map" });
+  }
+});
+
 router.delete("/", requireAuth, async (req, res) => {
   try {
     const user = (req as any).user;
