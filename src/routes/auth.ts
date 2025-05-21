@@ -48,7 +48,6 @@ router.get("/discord/callback", async (req, res) => {
     });
 
     const user = userRes.data;
-    console.log(user);
 
     await prisma.users.upsert({
       where: { id: user.id },
@@ -61,7 +60,7 @@ router.get("/discord/callback", async (req, res) => {
         id: user.id,
         username: user.username,
         displayName: user.global_name || user.username,
-        avatar: user.avatar,
+        avatar: user.avatar ?? "none",
         admin: false,
       },
     });
