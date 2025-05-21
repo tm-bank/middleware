@@ -20,10 +20,12 @@ app.use(
 import auth from "./routes/auth";
 import maps from "./routes/maps";
 import user from "./routes/user";
+import blocks from "./routes/blocks";
 
 app.use("/auth", auth);
 app.use("/maps", maps);
 app.use("/user", user);
+app.use("/blocks", blocks)
 
 const server = app.listen(port, () => {
   console.log(`Server listening on port ${port}`);

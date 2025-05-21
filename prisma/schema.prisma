@@ -20,12 +20,25 @@ model maps {
   author    users    @relation(fields: [authorId], references: [id])
 }
 
+model blocks {
+  id        String   @id @default(uuid())
+  title     String
+  image     String
+  votes     BigInt   @default(0)
+  tags      String[]
+  createdAt DateTime @default(now())
+  authorId  String
+  ixId      String
+  author    users    @relation(fields: [authorId], references: [id])
+}
+
 model users {
-  id          String   @id
+  id          String   @id 
   username    String
   displayName String
   avatar      String
   votes       String[] @default([]) // map ids
   maps        maps[]
+  blocks      blocks[]
   admin       Boolean  @default(false)
 }
