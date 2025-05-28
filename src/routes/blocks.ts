@@ -309,9 +309,10 @@ router.get("/download/:fileName", async (req, res) => {
       "Content-Type",
       data.contentType || "application/octet-stream"
     );
-    res.setHeader("Content-Length", data.contentLength);
+    res.setHeader("Content-Length", data.contentLength ?? Buffer.from(data).length);
 
-    res.send(Buffer.from(data));
+    const buffer = Buffer.from(data);
+    res.send(buffer);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to download file" });
