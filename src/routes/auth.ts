@@ -54,7 +54,7 @@ router.get("/discord/callback", async (req, res) => {
       update: {
         username: user.username,
         displayName: user.global_name || user.username,
-        avatar: user.avatar,
+        avatar: user.avatar ?? "none",
       },
       create: {
         id: user.id,
