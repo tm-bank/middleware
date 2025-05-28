@@ -109,7 +109,7 @@ router.get("/:blockId", async (req, res) => {
 router.post("/", requireAuth, upload.single("file"), async (req, res) => {
   try {
     const user = (req as any).user;
-    const { title, tags, image, mapId } = req.body;
+    const { title, tags, image, mapIds } = req.body; // mapIds is an array of map IDs (optional)
 
     if (!title) {
       res.status(400).json({ error: "Missing required fields" });
@@ -131,7 +131,10 @@ router.post("/", requireAuth, upload.single("file"), async (req, res) => {
         tags: tags ? (typeof tags === "string" ? JSON.parse(tags) : tags) : [],
         authorId: user.id,
         bucketFileName,
-        mapId: mapId || undefined, // allow linking block to a map on creation
+        maps:
+          mapIds && Array.isArray(mapIds)
+            ? { connect: mapIds.map((id: string) => ({ id })) }
+            : undefined,
       },
     });
 

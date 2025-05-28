@@ -18,7 +18,8 @@ model maps {
   createdAt DateTime @default(now())
   authorId  String
   author    users    @relation(fields: [authorId], references: [id])
-  blocks   blocks[]
+  blocks    blocks[] @relation("MapBlocks")
+  blockList blocks[]
 }
 
 model blocks {
@@ -34,6 +35,7 @@ model blocks {
   mapsWhoUsed String[] @default([])
   mapId     String?
   map       maps?    @relation(fields: [mapId], references: [id])
+  maps      maps[]   @relation("MapBlocks")
 }
 
 model users {

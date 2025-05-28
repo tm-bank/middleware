@@ -84,7 +84,6 @@ router.post("/", requireAuth, async (req, res) => {
       return;
     }
 
-    // Connect blocks if blockIds are provided
     const map = await prisma.maps.create({
       data: {
         title,
@@ -92,12 +91,8 @@ router.post("/", requireAuth, async (req, res) => {
         images: images || [],
         tags: tags || [],
         authorId: user.id,
-        blocks: blockIds
-          ? {
-              connect: Array.isArray(blockIds)
-                ? blockIds.map((id: string) => ({ id }))
-                : [{ id: blockIds }],
-            }
+        blocks: blockIds && Array.isArray(blockIds)
+          ? { connect: blockIds.map((id: string) => ({ id })) }
           : undefined,
       },
       include: { blocks: true },
@@ -134,12 +129,8 @@ router.put("/:mapId", requireAuth, async (req, res) => {
         viewLink,
         images,
         tags,
-        blocks: blockIds
-          ? {
-              set: Array.isArray(blockIds)
-                ? blockIds.map((id: string) => ({ id }))
-                : [{ id: blockIds }],
-            }
+        blocks: blockIds && Array.isArray(blockIds)
+          ? { set: blockIds.map((id: string) => ({ id })) }
           : { set: [] },
       },
       include: { blocks: true },
