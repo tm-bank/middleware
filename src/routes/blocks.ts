@@ -64,14 +64,14 @@ router.get("/search", async (req, res) => {
 
     const blocks = await prisma.blocks.findMany({
       where,
-      include: { author: true },
+      include: { author: true, map: true },
       orderBy: { votes: "desc" },
     });
 
     res.json(convertBigInt(blocks));
   } catch (err) {
     console.log(err);
-    res.status(500).json({ error: "Failed to search maps" });
+    res.status(500).json({ error: "Failed to search blocks" });
   }
 });
 
@@ -84,6 +84,7 @@ router.get("/:blockId", async (req, res) => {
         where: {
           id: { equals: String(id) },
         },
+        include: { author: true, map: true }, // include map relation
       });
 
       if (!block) {
@@ -94,7 +95,7 @@ router.get("/:blockId", async (req, res) => {
       res.json(convertBigInt(block));
     } else {
       const blocks = await prisma.blocks.findMany({
-        include: { author: true },
+        include: { author: true, map: true }, // include map relation
         orderBy: { createdAt: "desc" },
       });
 
@@ -108,7 +109,7 @@ router.get("/:blockId", async (req, res) => {
 router.post("/", requireAuth, upload.single("file"), async (req, res) => {
   try {
     const user = (req as any).user;
-    const { title, tags, image } = req.body;
+    const { title, tags, image, mapId } = req.body;
 
     if (!title) {
       res.status(400).json({ error: "Missing required fields" });
@@ -121,7 +122,7 @@ router.post("/", requireAuth, upload.single("file"), async (req, res) => {
       const fileName = `macroblocks/${Date.now()}_${req.file.originalname}`;
       await uploadToB2(req.file.buffer, fileName, req.file.mimetype);
       bucketFileName = fileName;
-    } 
+    }
 
     const block = await prisma.blocks.create({
       data: {
@@ -130,6 +131,7 @@ router.post("/", requireAuth, upload.single("file"), async (req, res) => {
         tags: tags ? (typeof tags === "string" ? JSON.parse(tags) : tags) : [],
         authorId: user.id,
         bucketFileName,
+        mapId: mapId || undefined, // allow linking block to a map on creation
       },
     });
 
@@ -149,7 +151,7 @@ router.put(
     try {
       const user = (req as any).user;
       const { blockId } = req.params;
-      const { title, tags } = req.body;
+      const { title, tags, mapId } = req.body;
 
       const block = await prisma.blocks.findUnique({ where: { id: blockId } });
 
@@ -188,6 +190,7 @@ router.put(
               : tags
             : [],
           bucketFileName,
+          mapId: mapId || undefined, // allow updating the linked map
         },
       });
 

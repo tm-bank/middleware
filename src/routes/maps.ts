@@ -32,7 +32,7 @@ router.get("/search", async (req, res) => {
 
     const maps = await prisma.maps.findMany({
       where,
-      include: { author: true },
+      include: { author: true, blocks: true },
       orderBy: { votes: "desc" },
     });
 
@@ -52,6 +52,7 @@ router.get("/:mapId", async (req, res) => {
         where: {
           id: { equals: String(id) },
         },
+        include: { author: true, blocks: true }, 
       });
 
       if (!map) {
@@ -62,7 +63,7 @@ router.get("/:mapId", async (req, res) => {
       res.json(convertBigInt(map));
     } else {
       const maps = await prisma.maps.findMany({
-        include: { author: true },
+        include: { author: true, blocks: true }, 
         orderBy: { createdAt: "desc" },
       });
 
@@ -76,13 +77,14 @@ router.get("/:mapId", async (req, res) => {
 router.post("/", requireAuth, async (req, res) => {
   try {
     const user = (req as any).user;
-    const { title, viewLink, images, tags } = req.body;
+    const { title, viewLink, images, tags, blockIds } = req.body;
 
     if (!title || !viewLink) {
       res.status(400).json({ error: "Missing required fields" });
       return;
     }
 
+    // Connect blocks if blockIds are provided
     const map = await prisma.maps.create({
       data: {
         title,
@@ -90,7 +92,15 @@ router.post("/", requireAuth, async (req, res) => {
         images: images || [],
         tags: tags || [],
         authorId: user.id,
+        blocks: blockIds
+          ? {
+              connect: Array.isArray(blockIds)
+                ? blockIds.map((id: string) => ({ id }))
+                : [{ id: blockIds }],
+            }
+          : undefined,
       },
+      include: { blocks: true },
     });
 
     res.status(201).json(convertBigInt(map));
@@ -104,10 +114,10 @@ router.put("/:mapId", requireAuth, async (req, res) => {
   try {
     const user = (req as any).user;
     const { mapId } = req.params;
-    const { title, viewLink, images, tags } = req.body;
+    const { title, viewLink, images, tags, blockIds } = req.body;
 
     const map = await prisma.maps.findUnique({ where: { id: mapId } });
-    
+
     if (!map) {
       res.status(404).json({ error: "Map not found" });
       return;
@@ -124,7 +134,15 @@ router.put("/:mapId", requireAuth, async (req, res) => {
         viewLink,
         images,
         tags,
+        blocks: blockIds
+          ? {
+              set: Array.isArray(blockIds)
+                ? blockIds.map((id: string) => ({ id }))
+                : [{ id: blockIds }],
+            }
+          : { set: [] },
       },
+      include: { blocks: true },
     });
 
     res.json(convertBigInt(updated));
@@ -148,10 +166,10 @@ router.delete("/", requireAuth, async (req, res) => {
       where: { id: mapId },
     });
 
-    res.status(201);
+    res.status(201).end();
   } catch (err) {
     console.log(err);
-    res.status(500).json({ error: "Failed to create map" });
+    res.status(500).json({ error: "Failed to delete map" });
   }
 });
 

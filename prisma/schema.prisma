@@ -18,6 +18,7 @@ model maps {
   createdAt DateTime @default(now())
   authorId  String
   author    users    @relation(fields: [authorId], references: [id])
+  blocks   blocks[]
 }
 
 model blocks {
@@ -30,6 +31,9 @@ model blocks {
   authorId  String
   author    users    @relation(fields: [authorId], references: [id])
   bucketFileName String
+  mapsWhoUsed String[] @default([])
+  mapId     String?
+  map       maps?    @relation(fields: [mapId], references: [id])
 }
 
 model users {
