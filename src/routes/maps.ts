@@ -52,7 +52,7 @@ router.get("/:mapId", async (req, res) => {
         where: {
           id: { equals: String(id) },
         },
-        include: { author: true, blocks: true }, 
+        include: { author: true, blocks: true },
       });
 
       if (!map) {
@@ -63,7 +63,7 @@ router.get("/:mapId", async (req, res) => {
       res.json(convertBigInt(map));
     } else {
       const maps = await prisma.maps.findMany({
-        include: { author: true, blocks: true }, 
+        include: { author: true, blocks: true },
         orderBy: { createdAt: "desc" },
       });
 
@@ -91,9 +91,10 @@ router.post("/", requireAuth, async (req, res) => {
         images: images || [],
         tags: tags || [],
         authorId: user.id,
-        blocks: blockIds && Array.isArray(blockIds)
-          ? { connect: blockIds.map((id: string) => ({ id })) }
-          : undefined,
+        blocks:
+          blockIds && Array.isArray(blockIds)
+            ? { connect: blockIds.map((id: string) => ({ id })) }
+            : undefined,
       },
       include: { blocks: true },
     });
@@ -129,9 +130,10 @@ router.put("/:mapId", requireAuth, async (req, res) => {
         viewLink,
         images,
         tags,
-        blocks: blockIds && Array.isArray(blockIds)
-          ? { set: blockIds.map((id: string) => ({ id })) }
-          : { set: [] },
+        blocks:
+          blockIds && Array.isArray(blockIds)
+            ? { set: blockIds.map((id: string) => ({ id })) }
+            : { set: [] },
       },
       include: { blocks: true },
     });
@@ -157,7 +159,7 @@ router.delete("/", requireAuth, async (req, res) => {
       where: { id: mapId },
     });
 
-    res.status(201).end();
+    res.status(201).json({ message: "Map deleted successfully" });
   } catch (err) {
     console.log(err);
     res.status(500).json({ error: "Failed to delete map" });
