@@ -28,8 +28,8 @@ model blocks {
   tags      String[]
   createdAt DateTime @default(now())
   authorId  String
-  ixId      String
   author    users    @relation(fields: [authorId], references: [id])
+  bucketFileName String
 }
 
 model users {
