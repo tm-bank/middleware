@@ -293,7 +293,7 @@ router.get("/download/:fileName", async (req, res) => {
 
     await b2.authorize();
 
-    const b2FileName = `macroblocks/${fileName}`;
+    const b2FileName = `macroblocks/macroblocks/${fileName}`;
     const { data } = await b2.downloadFileByName({
       bucketName: process.env.B2_BUCKET_NAME!,
       fileName: b2FileName,
