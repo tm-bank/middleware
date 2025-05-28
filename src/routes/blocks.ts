@@ -105,13 +105,12 @@ router.get("/:blockId", async (req, res) => {
   }
 });
 
-// Create block with optional file upload
 router.post("/", requireAuth, upload.single("file"), async (req, res) => {
   try {
     const user = (req as any).user;
-    const { title, viewLink, tags } = req.body;
+    const { title, tags } = req.body;
 
-    if (!title || !viewLink) {
+    if (!title) {
       res.status(400).json({ error: "Missing required fields" });
       return;
     }
