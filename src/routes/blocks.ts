@@ -108,28 +108,25 @@ router.get("/:blockId", async (req, res) => {
 router.post("/", requireAuth, upload.single("file"), async (req, res) => {
   try {
     const user = (req as any).user;
-    const { title, tags } = req.body;
+    const { title, tags, image } = req.body;
 
     if (!title) {
       res.status(400).json({ error: "Missing required fields" });
       return;
     }
 
-    let imageUrl = "";
     let bucketFileName = "";
 
     if (req.file) {
       const fileName = `macroblocks/${Date.now()}_${req.file.originalname}`;
-      imageUrl = await uploadToB2(req.file.buffer, fileName, req.file.mimetype);
+      await uploadToB2(req.file.buffer, fileName, req.file.mimetype);
       bucketFileName = fileName;
-    } else if (req.body.image) {
-      imageUrl = req.body.image;
-    }
+    } 
 
     const block = await prisma.blocks.create({
       data: {
         title,
-        image: imageUrl,
+        image,
         tags: tags ? (typeof tags === "string" ? JSON.parse(tags) : tags) : [],
         authorId: user.id,
         bucketFileName,
@@ -152,7 +149,7 @@ router.put(
     try {
       const user = (req as any).user;
       const { blockId } = req.params;
-      const { title, tags, ixId } = req.body;
+      const { title, tags } = req.body;
 
       const block = await prisma.blocks.findUnique({ where: { id: blockId } });
 
