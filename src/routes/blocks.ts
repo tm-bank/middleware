@@ -293,14 +293,18 @@ router.get("/download/:fileName", async (req, res) => {
 
     await b2.authorize();
 
-    const b2FileName = `macroblocks/macroblocks/${fileName}`;
+    // If fileName already starts with macroblocks/, don't prepend again
+    const b2FileName = fileName.startsWith("macroblocks/")
+      ? fileName
+      : `macroblocks/${fileName}`;
+
     const { data } = await b2.downloadFileByName({
       bucketName: process.env.B2_BUCKET_NAME!,
       fileName: b2FileName,
       responseType: "arraybuffer",
     });
 
-    res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+    res.setHeader("Content-Disposition", `attachment; filename="${fileName.replace(/^.*\//, "")}"`);
     res.setHeader(
       "Content-Type",
       data.contentType || "application/octet-stream"
